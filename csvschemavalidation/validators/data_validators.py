@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*-coding: utf-8 -*-
 
-from pycsvschema import defaults, exceptions
-from pycsvschema.validators import types
+from csvschemavalidation import defaults, exceptions
+from csvschemavalidation.validators import types
 
 # Validators for options under `fields`
 # Each validator should be a generator, accepting three parameters:

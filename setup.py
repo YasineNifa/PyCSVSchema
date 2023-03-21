@@ -11,15 +11,15 @@ with open("README.md") as f:
     long_description = f.read()
 
 setup(
-    name="pycsvschema",
-    version="0.1.0",
-    description="PyCSVSchema is an implementation of CSV Schema in Python.",
+    name="csvschemavalidation",
+    version="0.0.7",
+    description="csvschemavalidation is an implementation of CSV Schema in Python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="Guangyang Li",
-    author_email="mail@guangyangli.com",
+    author="Yassine Nifa",
+    author_email="yasine.nifa@gmail.com",
     license="MIT",
-    packages=["pycsvschema", "pycsvschema.validators"],
+    packages=["csvschemavalidation", "csvschemavalidation.validators"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -32,8 +32,8 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     keywords="csv schema json jsonschema validation validator",
-    url="https://github.com/csv-schema/PyCSVSchema",
+    url="https://github.com/YasineNifa/PyCSVSchema",
     install_requires=["jsonschema", "rfc3986", "pycountry"],
-    package_data={"pycsvschema": ["schema.json"]},
+    package_data={"csvschemavalidation": ["schema.json"]},
     include_package_data=True,
 )

@@ -26,7 +26,7 @@ import uuid
 import pycountry
 
 import rfc3986
-from pycsvschema import defaults
+from csvschemavalidation import defaults
 
 
 class TypeValidator(object):

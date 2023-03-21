@@ -5,7 +5,7 @@ import contextlib
 import sys
 from itertools import islice
 
-from pycsvschema.validators import data_validators
+from csvschemavalidation.validators import data_validators
 
 
 @contextlib.contextmanager

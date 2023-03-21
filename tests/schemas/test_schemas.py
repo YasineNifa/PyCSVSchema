@@ -6,7 +6,7 @@ import os
 import unittest
 
 import jsonschema
-from pycsvschema import definitions
+from csvschemavalidation import definitions
 from tests import TEST_DIR
 
 
@@ -32,7 +32,6 @@ class TestSchemas(unittest.TestCase):
         filename = "schema_with_regex.json"
         schema_file = os.path.join(self._this_dir, filename)
         self.valdiate_schema(schema_file)
-
 
 
 if __name__ == "__main__":

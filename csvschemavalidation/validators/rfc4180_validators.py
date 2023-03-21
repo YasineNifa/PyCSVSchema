@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*-coding: utf-8 -*-
 
-from pycsvschema import exceptions
+from csvschemavalidation import exceptions
 
 # RFC 4180 Validators
 # https://tools.ietf.org/html/rfc4180
@@ -20,7 +20,9 @@ def number_of_fields(row, row_number, header_length):
     Make sure each line contains the same number of fields
     """
     if len(row) != header_length:
-        yield exceptions.ValidationError(message="Illegal null value", row_number=row_number)
+        yield exceptions.ValidationError(
+            message="Illegal null value", row_number=row_number
+        )
 
 
 RFC4180_VALIDATIONS = {"number_of_fields": number_of_fields}

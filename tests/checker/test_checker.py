@@ -5,8 +5,9 @@ import json
 import os
 import unittest
 
-from pycsvschema.checker import Validator
+from csvschemavalidation.checker import Validator
 from tests import TEST_DIR
+
 
 def validate(csv_file, schema_file):
     """Validate a CSV file against a given schema file."""
@@ -14,6 +15,7 @@ def validate(csv_file, schema_file):
         schema = json.load(schema_stream)
     v = Validator(csvfile=csv_file, schema=schema)
     v.validate()
+
 
 class TestChecker(unittest.TestCase):
     """Test that a given csv and schema pair rent the expected result."""

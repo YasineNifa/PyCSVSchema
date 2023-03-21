@@ -7,7 +7,7 @@ from itertools import chain
 from typing import Dict, Optional
 
 import jsonschema
-from pycsvschema import defaults, definitions, validators, utilities
+from csvschemavalidation import defaults, definitions, validators, utilities
 
 
 class Cell(object):

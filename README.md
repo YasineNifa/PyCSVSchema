@@ -1,13 +1,13 @@
-# PyCSVSchema
+# csvschemavalidation
 
-PyCSVSchema is an implementation of [CSV Schema](https://github.com/csvschema/csvschema) in Python.
+csvschemavalidation is an implementation of [CSV Schema](https://github.com/csvschema/csvschema) in Python.
 
 This project is at Alpha version and still under heavy development.
 
 ## Example
 
 ```python
->>> from pycsvschema.checker import Validator
+>>> from csvschemavalidation.checker import Validator
 >>> # demo.csv:
 ... # id,name,value
 ... # 1,Ann,"5"
@@ -35,7 +35,7 @@ Note that the validator does not check if the CSV format fits the dialect define
 ## Installation
 
 ```bash
-pip install pycsvschema
+pip install csvschemavalidation
 ```
 
 ## Requirements

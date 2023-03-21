@@ -4,7 +4,7 @@
 import re
 from itertools import chain
 
-from pycsvschema import defaults, exceptions, utilities
+from csvschemavalidation import defaults, exceptions, utilities
 
 # Validators for root options
 # Each validator should be a generator, accepting three parameters:
@@ -17,14 +17,20 @@ def additionalfields(header, schema, column_validators):
     if schema["additionalFields"] is True:
         return
 
-    extra_fields = set(header) - set(field.get("name") for field in schema.get("fields", defaults.FIELDS))
+    extra_fields = set(header) - set(
+        field.get("name") for field in schema.get("fields", defaults.FIELDS)
+    )
     for extra_field in extra_fields:
         matched = False
-        for regex in schema.get("patternFields", defaults.PATTERNFIELDS).keys():
+        for regex in schema.get(
+            "patternFields", defaults.PATTERNFIELDS
+        ).keys():
             if re.match(regex, extra_field):
                 matched = True
         if matched is False:
-            yield exceptions.ValidationError(message="Field {0} is not defined".format(extra_field))
+            yield exceptions.ValidationError(
+                message="Field {0} is not defined".format(extra_field)
+            )
 
 
 def definitions(header, schema, column_validators):
@@ -40,16 +46,23 @@ def definitions(header, schema, column_validators):
     for ref_name, field_schema in schema["definitions"].items():
         column_info = {"field_schema": field_schema}
 
-        utilities.find_data_validators(column_info=column_info, field_schema=field_schema)
+        utilities.find_data_validators(
+            column_info=column_info, field_schema=field_schema
+        )
 
         column_validators["definitions"][ref_name] = column_info
 
-    for column_info in chain(column_validators["columns"].values(), column_validators["unfoundfields"].values()):
+    for column_info in chain(
+        column_validators["columns"].values(),
+        column_validators["unfoundfields"].values(),
+    ):
         if column_info.get("ref") is not None:
             if column_info["ref"] not in schema["definitions"].keys():
                 raise ValueError("Referencing undefined field")
 
-            column_info.update(column_validators["definitions"][column_info["ref"]])
+            column_info.update(
+                column_validators["definitions"][column_info["ref"]]
+            )
 
     yield from ()
 
@@ -73,10 +86,14 @@ def exactfields(header, schema, column_validators):
     if not schema["exactFields"]:
         return
 
-    failed = [field.get("name") for field in schema.get("fields", defaults.FIELDS)] != header
+    failed = [
+        field.get("name") for field in schema.get("fields", defaults.FIELDS)
+    ] != header
 
     if failed:
-        yield exceptions.ValidationError(message="Column name is different to fields.name in schema")
+        yield exceptions.ValidationError(
+            message="Column name is different to fields.name in schema"
+        )
 
     column_validators["columns"].clear()
     for column_index, column in enumerate(header):
@@ -84,7 +101,9 @@ def exactfields(header, schema, column_validators):
 
         column_info = {"field_schema": field_schema, "column_name": column}
 
-        utilities.find_data_validators(column_info=column_info, field_schema=field_schema)
+        utilities.find_data_validators(
+            column_info=column_info, field_schema=field_schema
+        )
 
         column_validators["columns"][column_index] = column_info
 
@@ -94,7 +113,9 @@ def maxfields(header, schema, column_validators):
 
     if failed:
         yield exceptions.ValidationError(
-            message="Number of column(s) is greater than maxFields of {0}".format(schema["maxFields"])
+            message="Number of column(s) is greater than maxFields of {0}".format(
+                schema["maxFields"]
+            )
         )
 
 
@@ -103,7 +124,9 @@ def minfields(header, schema, column_validators):
 
     if failed:
         yield exceptions.ValidationError(
-            message="Number of column(s) is less than minFields of {0}".format(schema["minFields"])
+            message="Number of column(s) is less than minFields of {0}".format(
+                schema["minFields"]
+            )
         )
 
 
@@ -118,7 +141,9 @@ def patternfields(header, schema, column_validators):
     column_validators["patternfields"] = {}
     for pattern, field_schema in schema["patternFields"].items():
         column_info = {"field_schema": field_schema}
-        utilities.find_data_validators(column_info=column_info, field_schema=field_schema)
+        utilities.find_data_validators(
+            column_info=column_info, field_schema=field_schema
+        )
 
         column_validators["patternfields"][pattern] = column_info
 
@@ -164,12 +189,24 @@ def field_required(header, schema, column_validators):
 
     for column_info in column_validators["columns"].values():
         failed = (
-            column_info["field_schema"].get("required", defaults.FIELDS_REQUIRED)
+            column_info["field_schema"].get(
+                "required", defaults.FIELDS_REQUIRED
+            )
             and column_info["column_name"] not in header
         )
         if failed:
-            yield exceptions.ValidationError(message="{0} is a required field".format(column_info["column_name"]))
+            yield exceptions.ValidationError(
+                message="{0} is a required field".format(
+                    column_info["column_name"]
+                )
+            )
 
     for column_name, column_info in column_validators["unfoundfields"].items():
-        if column_info["field_schema"].get("required", defaults.FIELDS_REQUIRED):
-            yield exceptions.ValidationError(message="{0} is a required field".format(column_info["column_name"]))
+        if column_info["field_schema"].get(
+            "required", defaults.FIELDS_REQUIRED
+        ):
+            yield exceptions.ValidationError(
+                message="{0} is a required field".format(
+                    column_info["column_name"]
+                )
+            )
