@@ -32,13 +32,20 @@ class RFCDialect(csv.Dialect):
 
 
 class Validator:
-    def __init__(self, csvfile: str, schema: Dict, output: Optional[str] = None, errors: str = "raise", strict=True):
+    def __init__(
+        self,
+        csvfile: str,
+        schema: Dict,
+        output: Optional[str] = None,
+        errors: str = "raise",
+        strict=True,
+    ):
         """
         :param csvfile: Path to CSV file
         :param schema: CSV Schema in dict
         :param output: Path to output file of errors. If output is None, print the error message. Default: None.
-        :param errors: {'raise', 'coerce'} If error is 'raise', stop the validation when it meets the first error. If
-        error is 'coerce', output all errors.
+        :param errors: {'raise', 'coerce', 'raise_all'} If error is 'raise', stop the validation when it meets the first error. If
+        error is 'coerce', output all errors. If error is 'raise_all', raise all errors at once
         :param strict: Whether to follow RFC 4180 strictly when parsing CSV file
         """
 
@@ -50,7 +57,7 @@ class Validator:
 
         self.strict = strict
 
-        if errors not in ("raise", "coerce"):
+        if errors not in ("raise", "coerce", "raise_all"):
             raise ValueError("Unknown value for parameter errors")
         self.errors = errors
 
@@ -77,7 +84,13 @@ class Validator:
         return type(
             "CSVDialect",
             (RFCDialect,),
-            {"strict": self.strict, **{dialect_option_mapping.get(k, k): v for k, v in schema_dialect.items()}},
+            {
+                "strict": self.strict,
+                **{
+                    dialect_option_mapping.get(k, k): v
+                    for k, v in schema_dialect.items()
+                },
+            },
         )
 
     def validate_schema(self):
@@ -94,14 +107,26 @@ class Validator:
 
             self.prepare_field_schema()
 
-            with utilities.file_writer(self.output) as output:
-                # Concat errors from header checking and row checking
-                for error in chain(self.check_header(), self.check_rows(csv_reader)):
-                    if self.errors == "raise":
-                        raise error
-                    else:
-                        output.write(str(error))
-                        output.write("\n")
+            if self.errors != "raise_all":
+                with utilities.file_writer(self.output) as output:
+                    # Concat errors from header checking and row checking
+                    for error in chain(
+                        self.check_header(), self.check_rows(csv_reader)
+                    ):
+                        if self.errors == "raise":
+                            raise error
+                        else:
+                            output.write(str(error))
+                            output.write("\n")
+            else:
+                raise Exception(
+                    "\n".join(
+                        str(error)
+                        for error in chain(
+                            self.check_header(), self.check_rows(csv_reader)
+                        )
+                    )
+                )
 
     def prepare_field_schema(self):
         """
@@ -162,26 +187,41 @@ class Validator:
                 header_index[v] = [k]
 
         for field_schema in self.schema.get("fields", defaults.FIELDS):
-            column_info = {"field_schema": field_schema, "column_name": field_schema["name"]}
+            column_info = {
+                "field_schema": field_schema,
+                "column_name": field_schema["name"],
+            }
 
-            utilities.find_data_validators(column_info=column_info, field_schema=field_schema)
+            utilities.find_data_validators(
+                column_info=column_info, field_schema=field_schema
+            )
 
             # Pass the validators to one or more than one columns
             if field_schema["name"] in header_index.keys():
                 for column_index in header_index[field_schema["name"]]:
-                    self.column_validators["columns"][column_index] = column_info
+                    self.column_validators["columns"][
+                        column_index
+                    ] = column_info
             # Store the unfound field names in column_validators.unfoundfields
             else:
-                self.column_validators["unfoundfields"][field_schema["name"]] = column_info
+                self.column_validators["unfoundfields"][
+                    field_schema["name"]
+                ] = column_info
 
     def check_header(self):
         for validator_name, validator in validators.HEADER_VALIDATORS.items():
             if validator_name in self.schema:
-                yield from validator(header=self.header, schema=self.schema, column_validators=self.column_validators)
+                yield from validator(
+                    header=self.header,
+                    schema=self.schema,
+                    column_validators=self.column_validators,
+                )
 
         # required is defined under field or definitions, but it is validated with header
         yield from validators.header_validators.field_required(
-            header=self.header, schema=self.schema, column_validators=self.column_validators
+            header=self.header,
+            schema=self.schema,
+            column_validators=self.column_validators,
         )
 
     # TODO: document for callback
@@ -190,21 +230,35 @@ class Validator:
             row_number = row_index + 1
 
             validators.rfc4180_validators.number_of_fields(
-                row=row, row_number=row_number, header_length=self.header_length
+                row=row,
+                row_number=row_number,
+                header_length=self.header_length,
             )
 
-            for index, column_info in self.column_validators["columns"].items():
+            for index, column_info in self.column_validators[
+                "columns"
+            ].items():
                 # TODO: replace cell
                 # cell = Cell(value=row[index], row_number=row_number, column_name=self.header[index])
-                cell = {"value": row[index], "row_number": row_number, "column_name": self.header[index]}
+                cell = {
+                    "value": row[index],
+                    "row_number": row_number,
+                    "column_name": self.header[index],
+                }
 
                 # Update cell['value'] to None if value is in missingValues
                 yield from validators.data_validators.missingvalues(
-                    cell=cell, schema=self.schema, column_validators=self.column_validators
+                    cell=cell,
+                    schema=self.schema,
+                    column_validators=self.column_validators,
                 )
 
                 for validator in column_info["validators"]:
                     # Type validator convert cell value into target type, other validators don't accept None value
-                    yield from validator(cell=cell, schema=self.schema, field_schema=column_info["field_schema"])
+                    yield from validator(
+                        cell=cell,
+                        schema=self.schema,
+                        field_schema=column_info["field_schema"],
+                    )
 
             callback(row_index, row)
