@@ -19,7 +19,9 @@ def field_type(cell, schema, field_schema):
     mapper = types.TYPE_MAPPER[type_name](field_schema=field_schema)
     if mapper.validate(value=cell["value"]) is False:
         yield exceptions.ValidationError(
-            message="Value {0} does not satisfy the type or format".format(cell["value"]),
+            message="Value {0} does not satisfy the type or format".format(
+                cell["value"]
+            ),
             column=field_schema.get("name"),
             row_number=cell["row_number"],
         )
@@ -35,7 +37,9 @@ def field_enum(cell, schema, field_schema):
 
     if failed:
         yield exceptions.ValidationError(
-            message="Value {0} is not in enum of {1}".format(cell["value"], enum),
+            message="Value {0} is not in enum of {1}".format(
+                cell["value"], enum
+            ),
             column=field_schema.get("name"),
             row_number=cell["row_number"],
         )
@@ -46,7 +50,9 @@ def field_maximum(cell, schema, field_schema):
         return
 
     maximum = field_schema["maximum"]
-    exclusivemaximum = field_schema.get("exclusiveMaximum", defaults.FIELDS_EXCLUSIVEMAXIMUM)
+    exclusivemaximum = field_schema.get(
+        "exclusiveMaximum", defaults.FIELDS_EXCLUSIVEMAXIMUM
+    )
 
     if exclusivemaximum:
         failed = maximum <= cell["value"]
@@ -57,7 +63,9 @@ def field_maximum(cell, schema, field_schema):
 
     if failed:
         yield exceptions.ValidationError(
-            message="Value {0} is {1} maximum of {2}".format(cell["value"], comapre, maximum),
+            message="Value {0} is {1} maximum of {2}".format(
+                cell["value"], comapre, maximum
+            ),
             column=field_schema.get("name"),
             row_number=cell["row_number"],
         )
@@ -68,7 +76,9 @@ def field_minimum(cell, schema, field_schema):
         return
 
     minimum = field_schema["minimum"]
-    exclusiveminimum = field_schema.get("exclusiveMinimum", defaults.FIELDS_EXCLUSIVEMININUM)
+    exclusiveminimum = field_schema.get(
+        "exclusiveMinimum", defaults.FIELDS_EXCLUSIVEMININUM
+    )
 
     if exclusiveminimum:
         failed = minimum >= cell["value"]
@@ -79,7 +89,9 @@ def field_minimum(cell, schema, field_schema):
 
     if failed:
         yield exceptions.ValidationError(
-            message="Value {0} is {1} minimum of {2}".format(cell["value"], comapre, minimum),
+            message="Value {0} is {1} minimum of {2}".format(
+                cell["value"], comapre, minimum
+            ),
             column=field_schema.get("name"),
             row_number=cell["row_number"],
         )
@@ -95,7 +107,9 @@ def field_maxlength(cell, schema, field_schema):
 
     if failed:
         yield exceptions.ValidationError(
-            message="Value {0} is longer than minLength of {1}".format(cell["value"], maxlength),
+            message="Value {0} is longer than minLength of {1}".format(
+                cell["value"], maxlength
+            ),
             column=field_schema.get("name"),
             row_number=cell["row_number"],
         )
@@ -111,7 +125,9 @@ def field_minlength(cell, schema, field_schema):
 
     if failed:
         yield exceptions.ValidationError(
-            message="Value {0} is shorter than minLength of {1}".format(cell["value"], minlength),
+            message="Value {0} is shorter than minLength of {1}".format(
+                cell["value"], minlength
+            ),
             column=field_schema.get("name"),
             row_number=cell["row_number"],
         )
@@ -127,7 +143,9 @@ def field_multipleof(cell, schema, field_schema):
 
     if failed:
         yield exceptions.ValidationError(
-            message="Value {0} is not multiple of {1}".format(cell["value"], multipleof),
+            message="Value {0} is not multiple of {1}".format(
+                cell["value"], multipleof
+            ),
             column=field_schema.get("name"),
             row_number=cell["row_number"],
         )
@@ -141,7 +159,9 @@ def field_nullable(cell, schema, field_schema):
 
     if failed:
         yield exceptions.ValidationError(
-            message="Illegal null value", column=field_schema.get("name"), row_number=cell["row_number"]
+            message="Illegal null value",
+            column=field_schema.get("name"),
+            row_number=cell["row_number"],
         )
 
 
@@ -179,6 +199,8 @@ def missingvalues(cell, schema, column_validators):
     """
     missingvalues is not a validator, but only update cell value into None if it's in missing value list
     """
-    if cell["value"] in set(schema.get("missingValues", defaults.MISSINGVALUES)):
+    if cell["value"] in set(
+        schema.get("missingValues", defaults.MISSINGVALUES)
+    ):
         cell["value"] = None
     yield from ()

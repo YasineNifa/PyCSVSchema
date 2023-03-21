@@ -107,26 +107,22 @@ class Validator:
 
             self.prepare_field_schema()
 
-            if self.errors != "raise_all":
-                with utilities.file_writer(self.output) as output:
-                    # Concat errors from header checking and row checking
-                    for error in chain(
-                        self.check_header(), self.check_rows(csv_reader)
-                    ):
-                        if self.errors == "raise":
-                            raise error
-                        else:
-                            output.write(str(error))
-                            output.write("\n")
-            else:
-                raise Exception(
-                    "\n".join(
-                        str(error)
-                        for error in chain(
-                            self.check_header(), self.check_rows(csv_reader)
-                        )
-                    )
-                )
+            with utilities.file_writer(self.output) as output:
+                # Concat errors from header checking and row checking
+                list_errors = []
+                for error in chain(
+                    self.check_header(), self.check_rows(csv_reader)
+                ):
+                    if self.errors == "raise":
+                        raise error
+                    elif self.errors == "coerce":
+                        output.write(str(error))
+                        output.write("\n")
+                    else:
+                        list_errors.append(str(error))
+
+            if len(list_errors) != 0:
+                raise Exception("\n".join(list_errors))
 
     def prepare_field_schema(self):
         """

@@ -15,7 +15,7 @@ setup(
     version="0.1.0",
     description="PyCSVSchema is an implementation of CSV Schema in Python.",
     long_description=long_description,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     author="Guangyang Li",
     author_email="mail@guangyangli.com",
     license="MIT",
@@ -33,7 +33,7 @@ setup(
     ],
     keywords="csv schema json jsonschema validation validator",
     url="https://github.com/csv-schema/PyCSVSchema",
-    install_requires=["jsonschema", "rfc3986"],
+    install_requires=["jsonschema", "rfc3986", "pycountry"],
     package_data={"pycsvschema": ["schema.json"]},
-    include_package_data=True
+    include_package_data=True,
 )

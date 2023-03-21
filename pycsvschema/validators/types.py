@@ -13,6 +13,7 @@
 #   ipv6
 #   hostname
 #   datetime
+#   iso-3166-2
 # number
 # integer
 # boolean
@@ -22,6 +23,7 @@ import datetime
 import ipaddress
 import re
 import uuid
+import pycountry
 
 import rfc3986
 from pycsvschema import defaults
@@ -34,7 +36,9 @@ class TypeValidator(object):
         self.value = None
         self.to_type = None
 
-    def try_convert_value(self, value, to_type, convertor_config=None, update=False):
+    def try_convert_value(
+        self, value, to_type, convertor_config=None, update=False
+    ):
         if not convertor_config:
             convertor_config = {}
 
@@ -78,22 +82,39 @@ class StringValidator(TypeValidator):
             if not rfc3986.is_valid_uri(value, require_scheme=True):
                 return False
         elif self.format == "uuid":
-            return self.try_convert_value(value=value, to_type=uuid.UUID, convertor_config={"version": 4})
+            return self.try_convert_value(
+                value=value, to_type=uuid.UUID, convertor_config={"version": 4}
+            )
         elif self.format == "ipv4":
-            return self.try_convert_value(value=value, to_type=ipaddress.IPv4Address)
+            return self.try_convert_value(
+                value=value, to_type=ipaddress.IPv4Address
+            )
         elif self.format == "ipv6":
-            return self.try_convert_value(value=value, to_type=ipaddress.IPv6Address)
+            return self.try_convert_value(
+                value=value, to_type=ipaddress.IPv6Address
+            )
         elif self.format == "hostname":
             if not re.match(self.HOSTNAME_PATTERN, value):
                 return False
         elif self.format == "datetime":
-            self.pattern = self.field_schema.get("datetimePattern", defaults.FIELDS_FORMAT_DATETIME_PATTERN)
+            self.pattern = self.field_schema.get(
+                "datetimePattern", defaults.FIELDS_FORMAT_DATETIME_PATTERN
+            )
             try:
                 datetime.datetime.strptime(value, self.pattern)
             except Exception:
                 return False
-        elif self.field_schema.get("pattern", defaults.FIELDS_TYPE_STRING_PATTERN):
-            self.pattern = self.field_schema.get("pattern", defaults.FIELDS_TYPE_STRING_PATTERN)
+
+        elif self.format == "iso-3166-2":
+            if not pycountry.subdivisions.get(country_code=value):
+                return False
+
+        elif self.field_schema.get(
+            "pattern", defaults.FIELDS_TYPE_STRING_PATTERN
+        ):
+            self.pattern = self.field_schema.get(
+                "pattern", defaults.FIELDS_TYPE_STRING_PATTERN
+            )
             if not re.match(self.pattern, value):
                 return False
         return True
@@ -103,36 +124,48 @@ class NumberValidator(TypeValidator):
     def __init__(self, field_schema):
         super().__init__(field_schema=field_schema)
         self.to_type = float
-        self.groupchar = self.field_schema.get("groupChar", defaults.FIELDS_GROUPCHAR)
+        self.groupchar = self.field_schema.get(
+            "groupChar", defaults.FIELDS_GROUPCHAR
+        )
 
     def validate(self, value):
         if value is None:
             return
 
         value = value.replace(self.groupchar, "")
-        return self.try_convert_value(value=value, to_type=self.to_type, update=True)
+        return self.try_convert_value(
+            value=value, to_type=self.to_type, update=True
+        )
 
 
 class IntegerValidator(TypeValidator):
     def __init__(self, field_schema):
         super().__init__(field_schema=field_schema)
         self.to_type = int
-        self.groupchar = self.field_schema.get("groupChar", defaults.FIELDS_GROUPCHAR)
+        self.groupchar = self.field_schema.get(
+            "groupChar", defaults.FIELDS_GROUPCHAR
+        )
 
     def validate(self, value):
         if value is None:
             return
 
         value = value.replace(self.groupchar, "")
-        return self.try_convert_value(value=value, to_type=self.to_type, update=True)
+        return self.try_convert_value(
+            value=value, to_type=self.to_type, update=True
+        )
 
 
 class BooleanValidator(TypeValidator):
     def __init__(self, field_schema):
         super().__init__(field_schema=field_schema)
         self.to_type = bool
-        self.truevalues = set(self.field_schema.get("trueValues", defaults.FIELDS_TRUEVALUES))
-        self.falsevalues = set(self.field_schema.get("falseValues", defaults.FIELDS_FALSEVALUES))
+        self.truevalues = set(
+            self.field_schema.get("trueValues", defaults.FIELDS_TRUEVALUES)
+        )
+        self.falsevalues = set(
+            self.field_schema.get("falseValues", defaults.FIELDS_FALSEVALUES)
+        )
 
     def validate(self, value):
         if value in self.truevalues:
