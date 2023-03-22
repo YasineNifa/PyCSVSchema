@@ -12,7 +12,7 @@ with open("README.md") as f:
 
 setup(
     name="csvschemavalidation",
-    version="0.0.7",
+    version="0.0.8",
     description="csvschemavalidation is an implementation of CSV Schema in Python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
