@@ -119,10 +119,14 @@ class Validator:
                         output.write(str(error))
                         output.write("\n")
                     else:
-                        list_errors.append(str(error))
+
+                        error_message = (
+                            str(error).split(":", 1)[1].replace(">", "")
+                        )
+                        list_errors.append(error_message)
 
             if len(list_errors) != 0:
-                raise Exception("\n".join(list_errors))
+                raise Exception(" -".join(list_errors))
 
     def prepare_field_schema(self):
         """
